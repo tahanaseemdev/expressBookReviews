@@ -7,14 +7,16 @@ const public_users = express.Router();
 
 public_users.post("/register", (req, res) => {
   const { username, password } = req.body;
-  if (users.some(user => user.username === username)) {
+
+  if (isValid(username)) {
+    users.push({
+      "username": username,
+      "password": password
+    });
+    res.status(200).json({ message: "Customer Successfully Registered! Now you can log in" });
+  }else{
     return res.status(400).json({ message: "User already exists" });
   }
-  users.push({
-    "username":username,
-    "password":password
-  });
-  res.status(200).json({ message: "Customer Successfully Registered! Now you can log in" });
 });
 
 // Get the book list available in the shop
@@ -44,12 +46,12 @@ public_users.get('/author/:author', function (req, res) {
 // Get all books based on title
 public_users.get('/title/:title', function (req, res) {
   const title = req.params.title;
-  for (const key in books) {  
-    if (books[key].title==title) {
+  for (const key in books) {
+    if (books[key].title == title) {
       return res.status(200).send(JSON.stringify(books[key]));
     }
   }
-  res.status(400).json({message:"Book not found"});
+  res.status(400).json({ message: "Book not found" });
 });
 
 //  Get book review

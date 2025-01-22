@@ -4,25 +4,49 @@ let books = require("./booksdb.js");
 const regd_users = express.Router();
 
 let users = [];
+const secretKey = 'key';
 
-const isValid = (username)=>{ //returns boolean
-//write code to check is the username is valid
+const isValid = (username) => { //returns boolean
+  //write code to check is the username is valid
+  if (users.some(user => user.username === username)) {
+    return false;
+  }else{
+    return true;
+  }
 }
 
-const authenticatedUser = (username,password)=>{ //returns boolean
-//write code to check if username and password match the one we have in records.
+const authenticatedUser = (username, password) => { //returns boolean
+  //write code to check if username and password match the one we have in records.
+  if (users.some(user => user.username === username && user.password ===password)) {
+    return true;
+  }else{
+    return false;
+  }
 }
 
 //only registered users can login
-regd_users.post("/login", (req,res) => {
+regd_users.post("/login", (req, res) => {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const {username, password} = req.body;
+  if(authenticatedUser(username,password)){
+    const token = jwt.sign({ username }, secretKey, { expiresIn: '1h'});
+    req.session.token = token;
+    return res.status(200).json({ message: "Customer Logged In Successfully"});
+  }
+  return res.status(300).json({ message: "Invalid Credentials" });
 });
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const isbn = req.params.isbn;
+  const {review} = req.body;
+  if(req.session.token){
+    const decoded = jwt.verify(req.session.token, secretKey);
+    books[isbn].review.push(review);
+  }else{
+    return res.status(300).json({ message: "Please Log in first" });
+  }
 });
 
 module.exports.authenticated = regd_users;
