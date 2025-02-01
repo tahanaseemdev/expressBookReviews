@@ -14,7 +14,7 @@ public_users.post("/register", (req, res) => {
       "password": password
     });
     res.status(200).json({ message: "Customer Successfully Registered! Now you can log in" });
-  }else{
+  } else {
     return res.status(400).json({ message: "User already exists" });
   }
 });
@@ -60,4 +60,49 @@ public_users.get('/review/:isbn', function (req, res) {
   return res.status(200).send(JSON.stringify(books[isbn].reviews));
 });
 
+// Get list of books using asyn/await
+public_users.get('/async', async function (req, res) {
+  const dbBooks = await JSON.stringify(books);
+  return res.status(200).send(dbBooks);
+});
+
+// Search by ISBN using promises
+public_users.get('/promise/isbn/:isbn', function (req, res) {
+  const isbn = req.params.isbn;
+  Promise.resolve(books[isbn])
+    .then(function (book) {
+      res.status(200).send(JSON.stringify(book));
+    });
+});
+
+// Search by author using promises
+public_users.get('/promise/author/:author', function (req, res) {
+  const author = req.params.author;
+  Promise.resolve().then(function () {
+    for (const key in books) {
+      if (books.hasOwnProperty(key)) {
+        if (books[key].author == author) {
+          return res.status(200).send(JSON.stringify(books[key]));
+        }
+      }
+    }
+    res.status(400).json({ message: "Book not found" });
+  });
+});
+
+// Search by title using promises
+public_users.get('/promise/title/:title', function (req, res) {
+  const title = req.params.title;
+  Promise.resolve().then(function () {
+    for (const key in books) {
+      if (books[key].title == title) {
+        return res.status(200).send(JSON.stringify(books[key]));
+      }
+    }
+    res.status(400).json({ message: "Book not found" });
+  });
+});
+
+
 module.exports.general = public_users;
+
